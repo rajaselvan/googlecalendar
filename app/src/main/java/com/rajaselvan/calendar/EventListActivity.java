@@ -7,8 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.icu.text.DateFormat;
-import android.icu.text.SimpleDateFormat;
+import java.text.SimpleDateFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -20,10 +19,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import android.view.View;
 import android.view.Menu;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -39,18 +37,20 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
-import com.google.api.services.calendar.model.EventDateTime;
-import com.google.api.services.calendar.model.EventReminder;
 import com.google.api.services.calendar.model.Events;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
+import org.joda.time.MutableDateTime;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -62,10 +62,10 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private static final DateFormat FORMATTER = SimpleDateFormat.getDateInstance();
     private GoogleAccountCredential mCredential;
     private ProgressDialog mProgress;
-
+    private List<EventModel> eventModelList = new ArrayList<EventModel>();
+    private List<EventModel> fullEventList = new ArrayList<EventModel>();
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -99,15 +99,17 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
     }
 
 
     @Override
     protected void onResume(){
         getResultsFromApi();
+        mAdapter = new EventListAdapter(eventModelList);
+        mRecyclerView.setAdapter(mAdapter);
         super.onResume();
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -117,20 +119,27 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
 
 
     @Override
-    public void onDateSelected(@NonNull MaterialCalendarView widget, @Nullable CalendarDay date, boolean selected) {
-//        mTextView.setText(getSelectedDatesString(date));
-
+    public void onDateSelected(@NonNull MaterialCalendarView widget, @Nullable final CalendarDay date, boolean selected) {
+        List<EventModel> selectedDateList =  fullEventList.stream()
+                .filter(e -> e.getEventStartDate().contentEquals(getDateInFormat("MM/dd/yyyy", date.getDate())))
+                .collect(Collectors.toList());
+        eventModelList.clear();
+        eventModelList.addAll(selectedDateList);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onMonthChanged(MaterialCalendarView widget, CalendarDay date) {
-//        mTextView.setText(getSelectedDatesString(date));
+    public void onMonthChanged(MaterialCalendarView widget, CalendarDay firstDateOfNewMonth) {
+        MutableDateTime firstDateOfNextMonth = new MutableDateTime(firstDateOfNewMonth.getDate());
+        firstDateOfNextMonth.addMonths(1);
+        List<EventModel> selectedMonthList =  fullEventList.stream()
+                .filter(e -> e.isWithinRange(new Date(e.getEventStartDate()), firstDateOfNewMonth.getDate(), firstDateOfNextMonth.toDate()))
+                .collect(Collectors.toList());
+        eventModelList.clear();
+        eventModelList.addAll(selectedMonthList);
+        mAdapter.notifyDataSetChanged();
     }
 
-
-    private String getSelectedDatesString(CalendarDay date) {
-        return FORMATTER.format(date.getDate());
-    }
 
     /**
      * Attempt to call the API, after verifying that all the preconditions are
@@ -144,8 +153,8 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
-        } else if (! isDeviceOnline()) {
-//            mTextView.setText("No network connection available.");
+        } else if (!isDeviceOnline()) {
+            Toast.makeText(getApplicationContext(), "No network connection available.", Toast.LENGTH_LONG );
         } else {
             new EventListActivity.MakeRequestTask(mCredential).execute();
         }
@@ -244,8 +253,8 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+                                           String[] permissions,
+                                           int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
@@ -334,7 +343,7 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
      * An asynchronous task that handles the Google Calendar API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<EventModel>> {
+    private class MakeRequestTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.calendar.Calendar mService = null;
         private Exception mLastError = null;
 
@@ -345,22 +354,6 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
                     transport, jsonFactory, credential)
                     .setApplicationName("Google Calendar API Android Quickstart")
                     .build();
-        }
-
-        /**
-         * Background task to call Google Calendar API.
-         * @param params no parameters needed for this task.
-         */
-        @Override
-        protected List<EventModel> doInBackground(Void... params) {
-            try {
-                postNewEvent();
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
         }
 
 
@@ -409,36 +402,71 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
          * @return List of Strings describing returned events.
          * @throws IOException
          */
-        private List<EventModel> getDataFromApi() throws IOException {
-            // List the next 10 events from the primary calendar.
-            DateTime now = new DateTime(System.currentTimeMillis());
-            List<EventModel> eventList = new ArrayList<EventModel>();
+        private void getDataFromApi() throws IOException {
             Events events = mService.events().list("primary")
-                    .setMaxResults(10)
+                    .setMaxResults(2500)
                     .setOrderBy("startTime")
                     .setSingleEvents(true)
                     .execute();
             List<Event> items = events.getItems();
-
+            List<String> attendeesList = new ArrayList<String>();
             for (Event event : items) {
-              eventList.add(new EventModel(event.getId(), event.getSummary(), event.getDescription(), event.getStart().getDate().toString(),
-                      event.getEnd().getDate().toString(), event.getStart().getDateTime().toString(), null, null, null));
+                EventModel eventModel = new EventModel();
+                eventModel.setEventId(event.getId());
+                eventModel.setEventSummary(event.getSummary());
+                eventModel.setEventDescription(event.getDescription());
+                if(event.getStart().getDateTime()!=null){
+                    eventModel.setEventStartDate(getDateInFormat("MM/dd/yyyy", new Date(event.getStart().getDateTime().getValue())));
+                    eventModel.setEventStartTime(getDateInFormat("h:mm:a", new Date(event.getStart().getDateTime().getValue())));
+                } else
+                {
+                    eventModel.setEventStartDate(getDateInFormat("MM/dd/yyyy", new Date(event.getStart().getDate().getValue())));
+                    eventModel.setEventStartTime("All Day");
+                }
+                if(event.getEnd().getDateTime()!=null){
+                    eventModel.setEventEndDate(getDateInFormat("MM/dd/yyyy", new Date(event.getEnd().getDateTime().getValue())));
+                    eventModel.setEventEndTime(getDateInFormat("h:mm:a", new Date(event.getEnd().getDateTime().getValue())));
+                } else
+                {
+                    eventModel.setEventEndDate(getDateInFormat("MM/dd/yyyy", new Date(event.getEnd().getDate().getValue())));
+                    eventModel.setEventEndTime("All Day");
+                }
+                if(event.getAttendees() != null) {
+                    for(EventAttendee eventAttendee : event.getAttendees()){
+                        attendeesList.add(eventAttendee.getEmail());
+                    }
+                }
+                eventModel.setEventAttendees(attendeesList);
+//                if(event.getReminders()!= null) {
+//                    event.getReminders().get()
+//                }
+//                eventModel.setEventReminder();
+                fullEventList.add(eventModel);
             }
-            return eventList;
         }
 
 
         @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+            }
+            return null;
+        }
+
+        @Override
         protected void onPreExecute() {
-//            mTextView.setText("");
             mProgress.show();
         }
 
         @Override
-        protected void onPostExecute(List<EventModel> output) {
+        protected void onPostExecute(Void result) {
             mProgress.hide();
-            mAdapter = new EventListAdapter(output);
-            mRecyclerView.setAdapter(mAdapter);
+            eventModelList.addAll(fullEventList);
+            mAdapter.notifyDataSetChanged();
         }
 
         @Override
@@ -454,12 +482,18 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             EventListActivity.REQUEST_AUTHORIZATION);
                 } else {
-//                    mTextView.setText("The following error occurred:\n"
-//                            + mLastError.getMessage());
+                    Toast.makeText(getApplicationContext(),"The following error occurred:\n"
+                            + mLastError.getMessage(), Toast.LENGTH_LONG);
                 }
             } else {
-//                mTextView.setText("Request cancelled.");
+                Toast.makeText(getApplicationContext(), "Request cancelled.", Toast.LENGTH_LONG);
             }
         }
+    }
+
+
+    private String getDateInFormat(String format, Date date){
+        String result = new SimpleDateFormat(format).format(date);
+        return result;
     }
 }

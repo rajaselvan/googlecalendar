@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,8 +62,8 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
     @Override
     public void onBindViewHolder(EventListAdapter.ViewHolder holder, int position) {
         final EventModel model = values.get(position);
-        holder.txtDate.setText(model.getEventStartDate());
-        holder.txtMonth.setText(model.getEventStartDate());
+        holder.txtDate.setText(getDateInFormat("d", new Date(model.getEventStartDate())));
+        holder.txtMonth.setText(getDateInFormat("MMM", new Date(model.getEventStartDate())));
         holder.txtSummary.setText(model.getEventSummary());
         holder.txtTime.setText(model.getEventStartTime());
     }
@@ -72,4 +74,9 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
         return values.size();
     }
 
+
+    private String getDateInFormat(String format, Date date){
+        String result = new SimpleDateFormat(format).format(date);
+        return result;
+    }
 }

@@ -1,5 +1,6 @@
 package com.rajaselvan.calendar;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,6 +18,10 @@ public class EventModel {
     private List<String> eventAttendees;
     private String eventReminder;
 
+
+    public EventModel(){
+
+    }
 
     public EventModel(String eventId, String eventSummary, String eventDescription, String eventStartDate, String eventEndDate, String eventStartTime, String eventEndTime, List<String> eventAttendees, String eventReminder) {
         this.eventId = eventId;
@@ -102,4 +107,7 @@ public class EventModel {
         this.eventReminder = eventReminder;
     }
 
+    public boolean isWithinRange(Date testDate, Date startDate, Date endDate) {
+        return !(testDate.before(startDate) || testDate.after(endDate));
+    }
 }
