@@ -2,9 +2,11 @@ package com.rajaselvan.calendar;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,10 +64,10 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
     @Override
     public void onBindViewHolder(EventListAdapter.ViewHolder holder, int position) {
         final EventModel model = values.get(position);
-        holder.txtDate.setText(getDateInFormat("d", new Date(model.getEventStartDate())));
-        holder.txtMonth.setText(getDateInFormat("MMM", new Date(model.getEventStartDate())));
+        holder.txtDate.setText(getDateInFormat("d", new Date(model.getEventStartDateTime().getValue())));
+        holder.txtMonth.setText(getDateInFormat("MMM", new Date(model.getEventStartDateTime().getValue())));
         holder.txtSummary.setText(model.getEventSummary());
-        holder.txtTime.setText(model.getEventStartTime());
+        holder.txtTime.setText(getDateInFormat("hh:mm", new Date(model.getEventStartDateTime().getValue())));
     }
 
     // Return the size of your dataset (invoked by the layout manager)

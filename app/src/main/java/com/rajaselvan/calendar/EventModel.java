@@ -1,5 +1,10 @@
 package com.rajaselvan.calendar;
 
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.EventAttendee;
+import com.google.api.services.calendar.model.EventReminder;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -7,30 +12,27 @@ import java.util.List;
  * Created by rajaselvan on 10/12/17.
  */
 
-public class EventModel {
+public class EventModel implements Serializable {
+
     private String eventId;
     private String eventSummary;
     private String eventDescription;
-    private String eventStartDate;
-    private String eventEndDate;
-    private String eventStartTime;
-    private String eventEndTime;
-    private List<String> eventAttendees;
-    private String eventReminder;
+    private String eventLocation;
+    private DateTime eventStartDateTime;
+    private DateTime eventEndDateTime;
+    private List<EventAttendee> eventAttendees;
+    private List<EventReminder> eventReminder;
 
 
     public EventModel(){
-
     }
 
-    public EventModel(String eventId, String eventSummary, String eventDescription, String eventStartDate, String eventEndDate, String eventStartTime, String eventEndTime, List<String> eventAttendees, String eventReminder) {
-        this.eventId = eventId;
+    public EventModel(String eventSummary, String eventDescription, String eventLocation, DateTime eventStartDateTime, DateTime eventEndDateTime, List<EventAttendee> eventAttendees, List<EventReminder> eventReminder) {
         this.eventSummary = eventSummary;
         this.eventDescription = eventDescription;
-        this.eventStartDate = eventStartDate;
-        this.eventEndDate = eventEndDate;
-        this.eventStartTime = eventStartTime;
-        this.eventEndTime = eventEndTime;
+        this.eventLocation = eventLocation;
+        this.eventStartDateTime = eventStartDateTime;
+        this.eventEndDateTime = eventEndDateTime;
         this.eventAttendees = eventAttendees;
         this.eventReminder = eventReminder;
     }
@@ -59,55 +61,43 @@ public class EventModel {
         this.eventDescription = eventDescription;
     }
 
-    public String getEventStartDate() {
-        return eventStartDate;
+    public String getEventLocation() {
+        return eventLocation;
     }
 
-    public void setEventStartDate(String eventStartDate) {
-        this.eventStartDate = eventStartDate;
+    public void setEventLocation(String eventLocation) {
+        this.eventLocation = eventLocation;
     }
 
-    public String getEventEndDate() {
-        return eventEndDate;
+    public DateTime getEventStartDateTime() {
+        return eventStartDateTime;
     }
 
-    public void setEventEndDate(String eventEndDate) {
-        this.eventEndDate = eventEndDate;
+    public void setEventStartDateTime(DateTime eventStartDateTime) {
+        this.eventStartDateTime = eventStartDateTime;
     }
 
-    public String getEventStartTime() {
-        return eventStartTime;
+    public DateTime getEventEndDateTime() {
+        return eventEndDateTime;
     }
 
-    public void setEventStartTime(String eventStartTime) {
-        this.eventStartTime = eventStartTime;
+    public void setEventEndDateTime(DateTime eventEndDateTime) {
+        this.eventEndDateTime = eventEndDateTime;
     }
 
-    public String getEventEndTime() {
-        return eventEndTime;
-    }
-
-    public void setEventEndTime(String eventEndTime) {
-        this.eventEndTime = eventEndTime;
-    }
-
-    public List<String> getEventAttendees() {
+    public List<EventAttendee> getEventAttendees() {
         return eventAttendees;
     }
 
-    public void setEventAttendees(List<String> eventAttendees) {
+    public void setEventAttendees(List<EventAttendee> eventAttendees) {
         this.eventAttendees = eventAttendees;
     }
 
-    public String getEventReminder() {
+    public List<EventReminder> getEventReminder() {
         return eventReminder;
     }
 
-    public void setEventReminder(String eventReminder) {
+    public void setEventReminder(List<EventReminder> eventReminder) {
         this.eventReminder = eventReminder;
-    }
-
-    public boolean isWithinRange(Date testDate, Date startDate, Date endDate) {
-        return !(testDate.before(startDate) || testDate.after(endDate));
     }
 }

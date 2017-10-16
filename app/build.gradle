@@ -29,6 +29,7 @@ android {
 
 
 
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile('com.google.api-client:google-api-client-android:1.23.0') {
@@ -37,6 +38,7 @@ dependencies {
     compile('com.google.apis:google-api-services-calendar:v3-rev257-1.23.0') {
         exclude group: 'org.apache.httpcomponents'
     }
+
 
     compile 'com.google.android.gms:play-services-auth:11.0.4'
     compile 'pub.devrel:easypermissions:0.3.0'
@@ -49,6 +51,5 @@ dependencies {
     compile 'joda-time:joda-time:2.9.4'
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:support-v13:25.3.1'
-
     androidTestCompile 'junit:junit:4.12'
 }

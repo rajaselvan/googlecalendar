@@ -7,13 +7,19 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
+import android.icu.util.TimeZone;
 import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -30,21 +36,28 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
-import com.google.api.services.calendar.model.Events;
+
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class CreateEventActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class CreateEventActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private static TextView mTxtStartDate, mTxtEndDate;
     private static TextView mTxtStartTime, mTxtEndTime;
+    private static EditText mETxtSummary, mETxtDescription, mETxtLocation, mETxtAttendees;
     private DatePickerDialogFragment mDatePickerDialogFragment;
     private TimePickerDialogFragment mTimePickerDialogFragment;
     private ProgressDialog mProgress;
+    String[] reminder = {"10", "20", "30"};
+    private ArrayAdapter remainderAdapter;
+    private GoogleAccountCredential mCredential;
+    private Button mBtnCreate;
+    private Spinner selectRemainder;
 
 
     @Override
@@ -55,15 +68,29 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         mTxtEndDate = (TextView) findViewById(R.id.tv_end_date_value);
         mTxtStartTime = (TextView) findViewById(R.id.tv_start_time_value);
         mTxtEndTime = (TextView) findViewById(R.id.tv_end_time_value);
+        mETxtSummary = (EditText) findViewById(R.id.et_event_summary);
+        mETxtDescription = (EditText) findViewById(R.id.et_description);
+        mETxtLocation = (EditText) findViewById(R.id.et_location_value);
+        mETxtAttendees = (EditText) findViewById(R.id.et_invite_attendees);
         mTxtStartDate.setOnClickListener(this);
         mTxtEndDate.setOnClickListener(this);
         mTxtStartTime.setOnClickListener(this);
         mTxtEndTime.setOnClickListener(this);
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Calling Google Calendar API ...");
+        selectRemainder = (Spinner) findViewById(R.id.sp_select_remainder);
+        selectRemainder.setOnItemSelectedListener(this);
+        remainderAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, reminder);
+        remainderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        selectRemainder.setAdapter(remainderAdapter);
+        mCredential = GoogleAccountSingleton.getInstance(getApplicationContext());
+        mBtnCreate = (Button) findViewById(R.id.btn_create);
+        mBtnCreate.setOnClickListener(this);
+
     }
 
-
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         finish();
         super.onDestroy();
     }
@@ -85,7 +112,26 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         } else if (id == R.id.tv_end_time_value) {
             mTimePickerDialogFragment.setFlag(TimePickerDialogFragment.FLAG_END_TIME);
             mTimePickerDialogFragment.show(getSupportFragmentManager(), "timePicker");
+        } else if (id == R.id.btn_create) {
+            EventModel eventModel = new EventModel();
+            eventModel.setEventSummary(mETxtSummary.getText().toString());
+            eventModel.setEventDescription(mETxtDescription.getText().toString());
+            eventModel.setEventStartDateTime(getDateTime(mTxtStartDate.getText().toString(), mTxtStartTime.getText().toString()));
+            eventModel.setEventEndDateTime(getDateTime(mTxtEndDate.getText().toString(), mTxtEndTime.getText().toString()));
+            eventModel.setEventAttendees(getListOfEvenAttendees(mETxtAttendees.getText().toString()));
+            eventModel.setEventReminder(getListOfEventRemainders(selectRemainder.getSelectedItem().toString()));
+            new CreateEventActivity.InsertEventTask(mCredential).execute(eventModel);
         }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(getApplicationContext(), reminder[position], Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 
     public static class DatePickerDialogFragment extends DialogFragment implements
@@ -112,11 +158,11 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
             Calendar calendar = Calendar.getInstance();
             calendar.set(year, monthOfYear, dayOfMonth);
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             if (flag == FLAG_START_DATE) {
-                mTxtStartDate.setText(format.format(calendar.getTime()));
+                mTxtStartDate.setText(simpleDateFormat.format(calendar.getTime()));
             } else if (flag == FLAG_END_DATE) {
-                mTxtEndDate.setText(format.format(calendar.getTime()));
+                mTxtEndDate.setText(simpleDateFormat.format(calendar.getTime()));
             }
         }
     }
@@ -145,17 +191,13 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             String aMpM = "AM";
             int currentHour;
-            if(hourOfDay >11)
-            {
+            if (hourOfDay > 11) {
                 aMpM = "PM";
             }
 
-            if(hourOfDay>11)
-            {
+            if (hourOfDay > 11) {
                 currentHour = hourOfDay - 12;
-            }
-            else
-            {
+            } else {
                 currentHour = hourOfDay;
             }
 
@@ -172,66 +214,51 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
      * An asynchronous task that handles the Google Calendar API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, Void> {
+    private class InsertEventTask extends AsyncTask<EventModel, Void, Void> {
         private com.google.api.services.calendar.Calendar mService = null;
         private Exception mLastError = null;
 
-        MakeRequestTask(GoogleAccountCredential credential) {
+        InsertEventTask(GoogleAccountCredential credential) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.calendar.Calendar.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("Google Calendar API Android Quickstart")
+                    .setApplicationName("Google Calendar API")
                     .build();
         }
 
 
-        private void postNewEvent() throws IOException {
+        private void postNewEvent(EventModel eventModel) throws IOException, ParseException {
             Event event = new Event()
-                    .setSummary("Google I/O 2015")
-                    .setLocation("800 Howard St., San Francisco, CA 94103")
-                    .setDescription("A chance to hear more about Google's developer products.");
+                    .setSummary(eventModel.getEventSummary())
+                    .setLocation(eventModel.getEventLocation())
+                    .setDescription(eventModel.getEventDescription());
 
-            DateTime startDateTime = new DateTime("2017-10-13T09:00:00-07:00");
+            DateTime startDateTime = DateTime.parseRfc3339(eventModel.getEventStartDateTime().toStringRfc3339());
             EventDateTime start = new EventDateTime()
-                    .setDateTime(startDateTime)
-                    .setTimeZone("America/Los_Angeles");
+                    .setDateTime(startDateTime);
             event.setStart(start);
-
-            DateTime endDateTime = new DateTime("2017-10-13T17:00:00-07:00");
+            DateTime endDateTime = DateTime.parseRfc3339(eventModel.getEventEndDateTime().toStringRfc3339());
             EventDateTime end = new EventDateTime()
-                    .setDateTime(endDateTime)
-                    .setTimeZone("America/Los_Angeles");
+                    .setDateTime(endDateTime);
             event.setEnd(end);
-
-            String[] recurrence = new String[] {"RRULE:FREQ=DAILY;COUNT=2"};
-            event.setRecurrence(Arrays.asList(recurrence));
-
-            EventAttendee[] attendees = new EventAttendee[] {
-                    new EventAttendee().setEmail("lpage@example.com"),
-                    new EventAttendee().setEmail("sbrin@example.com"),
-            };
-            event.setAttendees(Arrays.asList(attendees));
-
-            EventReminder[] reminderOverrides = new EventReminder[] {
-                    new EventReminder().setMethod("email").setMinutes(24 * 60),
-                    new EventReminder().setMethod("popup").setMinutes(10),
-            };
+            event.setAttendees(eventModel.getEventAttendees());
             Event.Reminders reminders = new Event.Reminders()
                     .setUseDefault(false)
-                    .setOverrides(Arrays.asList(reminderOverrides));
+                    .setOverrides(eventModel.getEventReminder());
             event.setReminders(reminders);
 
             String calendarId = "primary";
+
             event = mService.events().insert(calendarId, event).execute();
+
         }
 
 
-
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(EventModel... params) {
             try {
-                postNewEvent();
+                postNewEvent(params[0]);
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -247,6 +274,7 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         @Override
         protected void onPostExecute(Void result) {
             mProgress.hide();
+            Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -254,20 +282,52 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
             mProgress.hide();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    showGooglePlayServicesAvailabilityErrorDialog(
+                    GoogleAccountSingleton.showGooglePlayServicesAvailabilityErrorDialog(
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            EventListActivity.REQUEST_AUTHORIZATION);
+                            GoogleAccountSingleton.REQUEST_AUTHORIZATION);
                 } else {
-                    Toast.makeText(getApplicationContext(),"The following error occurred:\n"
-                            + mLastError.getMessage(), Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(), "The following error occurred:\n"
+                            + mLastError.getMessage(), Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(getApplicationContext(), "Request cancelled.", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "Request cancelled.", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private DateTime getDateTime(String date, String time) {
+        String year = date.split("-")[0];
+        String month = date.split("-")[1];
+        String day = date.split("-")[2];
+        String hour = time.split(":")[0];
+        String minute = time.split(":")[1].replace("AM", "").replace("PM", "").trim();
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, Integer.parseInt(year));
+        cal.set(Calendar.MONTH, Integer.parseInt(month));
+        cal.set(Calendar.DATE, Integer.parseInt(day));
+        cal.set(Calendar.HOUR, Integer.parseInt(hour));
+        cal.set(Calendar.MINUTE, Integer.parseInt(minute));
+        cal.set(Calendar.SECOND, 0);
+        return new DateTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(cal.getTime()));
+    }
+
+
+    private List<EventAttendee> getListOfEvenAttendees(String eventAttendees) {
+        List<EventAttendee> attendees = new ArrayList<EventAttendee>();
+        for (String eventAttendee : eventAttendees.split(";")) {
+            attendees.add(new EventAttendee().setEmail(eventAttendee));
+        }
+        return attendees;
+    }
+
+
+    private List<EventReminder> getListOfEventRemainders(String remainder) {
+        List<EventReminder> remainders = new ArrayList<EventReminder>();
+        remainders.add(new EventReminder().setMethod("popup").setMinutes(Integer.parseInt(remainder)));
+        return remainders;
     }
 }

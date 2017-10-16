@@ -3,6 +3,10 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.rajaselvan.calendar.EventListActivity">
     <item
+        android:id="@+id/action_calendar"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
