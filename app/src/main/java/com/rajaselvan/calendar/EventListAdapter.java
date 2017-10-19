@@ -1,5 +1,6 @@
 package com.rajaselvan.calendar;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -37,6 +38,7 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
         }
     }
 
+
     public void add(int position, EventModel item) {
         values.add(position, item);
         notifyItemInserted(position);
@@ -51,9 +53,10 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
         values = myDataset;
     }
 
+
     @Override
     public EventListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+                                                          int viewType) {
         LayoutInflater inflater = LayoutInflater.from(
                 parent.getContext());
         View v = inflater.inflate(R.layout.activity_event_list_item, parent, false);
@@ -77,8 +80,15 @@ public class EventListAdapter extends RecyclerView.Adapter<EventListAdapter.View
     }
 
 
-    private String getDateInFormat(String format, Date date){
+    private String getDateInFormat(String format, Date date) {
         String result = new SimpleDateFormat(format).format(date);
         return result;
     }
+
+    public void updateList(List<EventModel> items) {
+        values.clear();
+        values.addAll(items);
+        notifyDataSetChanged();
+    }
 }
+

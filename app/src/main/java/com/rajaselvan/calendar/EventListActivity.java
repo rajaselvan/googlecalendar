@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 
+import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,14 +18,18 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ExpandedMenuView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -34,6 +39,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
+import com.google.api.services.calendar.model.EventReminder;
 import com.google.api.services.calendar.model.Events;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
@@ -58,12 +65,12 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
 
     private MaterialCalendarView mMaterialCalendarView;
     private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private EventListAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ProgressDialog mProgress;
-    private List<EventModel> fullEventList = new ArrayList<EventModel>();
     private GoogleAccountCredential mCredential;
     private Map<String, String> dateRange = new HashMap<String, String>();
+    private List<EventModel> listOfValues = new ArrayList<EventModel>();
+    private String calendarId ="phll02ughcj3qk6v61pp9ok5k4@group.calendar.google.com";
 
 
 
@@ -76,8 +83,43 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
         mRecyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Google Calendar API ...");
+        mRecyclerView.addOnItemTouchListener(
+                new RecyclerItemClickListener(getApplicationContext(), mRecyclerView ,new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        EventModel eventModel = listOfValues.get(position);
+                        Intent detailIntent = new Intent(getApplicationContext(), EventListDetailActivity.class);
+                        detailIntent.putExtra("id", eventModel.getEventId());
+                        detailIntent.putExtra("summary", eventModel.getEventSummary());
+                        detailIntent.putExtra("description", eventModel.getEventDescription());
+                        detailIntent.putExtra("location", eventModel.getEventLocation());
+                        detailIntent.putExtra("startDate", new SimpleDateFormat("yyyy-MM-dd").format(eventModel.getEventStartDateTime().getValue()));
+                        detailIntent.putExtra("endDate", new SimpleDateFormat("yyyy-MM-dd").format(eventModel.getEventEndDateTime().getValue()));
+                        detailIntent.putExtra("startTime", new SimpleDateFormat("hh:mm aa").format(eventModel.getEventStartDateTime().getValue()));
+                        detailIntent.putExtra("endTime", new SimpleDateFormat("hh:mm aa").format(eventModel.getEventEndDateTime().getValue()));
+                        if(eventModel.getEventAttendees()!= null) {
+                            StringBuilder eventAttendeesList = new StringBuilder();
+                            for (EventAttendee eventAttendee : eventModel.getEventAttendees()) {
+                                eventAttendeesList.append(eventAttendee.getEmail());
+                                eventAttendeesList.append(";");
+                            }
+                            detailIntent.putExtra("attendees", eventAttendeesList.toString());
+                        }
+                        if(eventModel.getEventReminder()!=null) {
+                            StringBuilder eventRemainderList = new StringBuilder();
+                            for (EventReminder eventReminder : eventModel.getEventReminder().getOverrides()) {
+                                eventRemainderList.append(eventReminder.getMinutes().toString());
+                                eventRemainderList.append(";");
+                            }
+                            detailIntent.putExtra("remainders", eventRemainderList.toString());
+                        }
+                        startActivity(detailIntent);
+                    }
+
+                })
+        );
+        mAdapter = new EventListAdapter(listOfValues);
+        mRecyclerView.setAdapter(mAdapter);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,7 +133,7 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
         // Initialize credentials and service object.
         mCredential = GoogleAccountSingleton.getInstance(getApplicationContext());
         setUpApp();
-
+        initCurrentMonth();
     }
 
 
@@ -186,12 +228,6 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
         } else {
             new EventListActivity.MakeRequestTask(mCredential).execute();
         }
-    }
-
-    public void bindFetchedData(List<EventModel> fetchedDataList) {
-        mAdapter = new EventListAdapter(fetchedDataList);
-        mRecyclerView.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
     }
 
 
@@ -348,20 +384,20 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
          * @throws IOException
          */
         private List<EventModel> getDataFromApi() throws IOException {
-            Events events = mService.events().list("primary")
-                    .setTimeMin(DateTime.parseRfc3339(dateRange.get("startDate")))
-                    .setTimeMax(DateTime.parseRfc3339(dateRange.get("endDate")))
-                    .setOrderBy("startTime")
-                    .setSingleEvents(true)
-                    .execute();
+            Events events = mService.events().list(calendarId)
+                        .setTimeMin(DateTime.parseRfc3339(dateRange.get("startDate")))
+                        .setTimeMax(DateTime.parseRfc3339(dateRange.get("endDate")))
+                        .setOrderBy("startTime")
+                        .setSingleEvents(true)
+                        .execute();
             List<Event> items = events.getItems();
-            List<String> attendeesList = new ArrayList<String>();
             List<EventModel> eventsList = new ArrayList<>();
             for (Event event : items) {
                 EventModel eventModel = new EventModel();
                 eventModel.setEventId(event.getId());
                 eventModel.setEventSummary(event.getSummary());
                 eventModel.setEventDescription(event.getDescription());
+                eventModel.setEventLocation(event.getLocation());
                 if (event.getStart().getDateTime() != null) {
                     eventModel.setEventStartDateTime(event.getStart().getDateTime());
                 } else {
@@ -374,6 +410,9 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
                 }
                 if (event.getAttendees() != null) {
                     eventModel.setEventAttendees(event.getAttendees());
+                }
+                if (event.getReminders() != null) {
+                    eventModel.setEventReminder(event.getReminders());
                 }
                 eventsList.add(eventModel);
             }
@@ -394,21 +433,17 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
 
         @Override
         protected void onPreExecute() {
-            mProgress.show();
+
         }
 
         @Override
         protected void onPostExecute(List<EventModel> results) {
-            mProgress.hide();
-            fullEventList.clear();
-            fullEventList.addAll(results);
-            bindFetchedData(results);
-            toggleCalendarView();
+            mAdapter.updateList(results);
+//            toggleCalendarView();
         }
 
         @Override
         protected void onCancelled() {
-            mProgress.hide();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     GoogleAccountSingleton.showGooglePlayServicesAvailabilityErrorDialog(

@@ -1,8 +1,8 @@
 package com.rajaselvan.calendar;
 
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
-import com.google.api.services.calendar.model.EventReminder;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -21,13 +21,13 @@ public class EventModel implements Serializable {
     private DateTime eventStartDateTime;
     private DateTime eventEndDateTime;
     private List<EventAttendee> eventAttendees;
-    private List<EventReminder> eventReminder;
+    private Event.Reminders eventReminder;
 
 
     public EventModel(){
     }
 
-    public EventModel(String eventSummary, String eventDescription, String eventLocation, DateTime eventStartDateTime, DateTime eventEndDateTime, List<EventAttendee> eventAttendees, List<EventReminder> eventReminder) {
+    public EventModel(String eventSummary, String eventDescription, String eventLocation, DateTime eventStartDateTime, DateTime eventEndDateTime, List<EventAttendee> eventAttendees, Event.Reminders eventReminder) {
         this.eventSummary = eventSummary;
         this.eventDescription = eventDescription;
         this.eventLocation = eventLocation;
@@ -93,11 +93,11 @@ public class EventModel implements Serializable {
         this.eventAttendees = eventAttendees;
     }
 
-    public List<EventReminder> getEventReminder() {
+    public Event.Reminders getEventReminder() {
         return eventReminder;
     }
 
-    public void setEventReminder(List<EventReminder> eventReminder) {
+    public void setEventReminder(Event.Reminders eventReminder) {
         this.eventReminder = eventReminder;
     }
 }

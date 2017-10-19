@@ -41,8 +41,7 @@
                 android:inputType="textPersonName"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
-                android:paddingTop="10dp"
-                android:textAlignment="viewStart" />
+                android:paddingTop="10dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -144,26 +143,24 @@
             android:paddingTop="8dp">
 
             <TextView
-                android:id="@+id/create_event_tv_start_date_value"
+                android:id="@+id/new_event_tv_start_date_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="2017-01-01"
-                android:textAlignment="viewStart" />
+                android:text="01/01/2017" />
 
             <TextView
-                android:id="@+id/create_event_tv_end_date_value"
+                android:id="@+id/new_event_tv_end_date_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="2017-02-01"
-                android:textAlignment="viewStart" />
+                android:text="02/01/2017" />
         </LinearLayout>
 
         <LinearLayout
@@ -197,26 +194,24 @@
             android:paddingTop="8dp">
 
             <TextView
-                android:id="@+id/create_event_tv_start_time_value"
+                android:id="@+id/new_event_tv_start_time_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="06:00 AM"
-                android:textAlignment="viewStart" />
+                android:text="06:00 AM" />
 
             <TextView
-                android:id="@+id/create_event_tv_end_time_value"
+                android:id="@+id/new_event_tv_end_time_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="09:00 PM"
-                android:textAlignment="viewStart" />
+                android:text="09:00 PM" />
         </LinearLayout>
 
         <LinearLayout
@@ -249,8 +244,7 @@
                 android:inputType="textEmailAddress"
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
-                android:paddingTop="10dp"
-                android:textAlignment="viewStart" />
+                android:paddingTop="10dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -284,11 +278,11 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/btn_create"
+            android:id="@+id/btn_update"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@android:color/holo_blue_bright"
-            android:text="Create" />
+            android:background="@android:color/holo_green_light"
+            android:text="Update" />
     </LinearLayout>
 </ScrollView>

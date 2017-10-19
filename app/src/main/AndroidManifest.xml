@@ -23,7 +23,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".CreateEventActivity" />
-        <activity android:name=".EventListDetailActivity"></activity>
+        <activity android:name=".EventListDetailActivity" />
+        <activity android:name=".EditListItemActivity"></activity>
     </application>
 
 </manifest>

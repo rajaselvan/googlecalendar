@@ -4,6 +4,7 @@
       tools:context="com.rajaselvan.calendar.EventListActivity">
     <item
         android:id="@+id/action_calendar"
+        android:title="Open Calendar"
         android:icon="@android:drawable/ic_menu_my_calendar"
         app:showAsAction="always" />
     <item

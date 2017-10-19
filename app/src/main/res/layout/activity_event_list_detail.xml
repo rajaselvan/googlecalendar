@@ -1,6 +1,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#ffffff">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +21,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Summary" />
+                android:text="Summary"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -33,7 +35,11 @@
                 android:id="@+id/tv_event_summary_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:textAlignment="viewStart" />
         </LinearLayout>
 
         <LinearLayout
@@ -47,7 +53,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Description" />
+                android:text="Description"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -59,7 +66,11 @@
                 android:id="@+id/tv_description_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:textAlignment="viewStart" />
         </LinearLayout>
 
         <LinearLayout
@@ -73,7 +84,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Location" />
+                android:text="Location"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -85,7 +97,11 @@
                 android:id="@+id/tv_location_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:textAlignment="viewStart" />
         </LinearLayout>
 
         <LinearLayout
@@ -99,14 +115,16 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Start Date" />
+                android:text="Start Date"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_end_date_label"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="End Date" />
+                android:text="End Date"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -117,17 +135,24 @@
             android:paddingTop="8dp">
 
             <TextView
-                android:id="@+id/tv_start_date_value"
+                android:id="@+id/display_event_tv_start_date_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="01/01/2017" />
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
+                android:text="01/01/2017"
+                android:textAlignment="viewStart" />
 
             <TextView
-                android:id="@+id/tv_end_date_value"
+                android:id="@+id/display_event_tv_end_date_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
                 android:text="02/01/2017" />
         </LinearLayout>
 
@@ -142,14 +167,16 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Start Time" />
+                android:text="Start Time"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_end_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="End Time" />
+                android:text="End Time"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -160,17 +187,23 @@
             android:paddingTop="8dp">
 
             <TextView
-                android:id="@+id/tv_start_time_value"
+                android:id="@+id/display_event_tv_start_time_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
                 android:text="06:00 AM" />
 
             <TextView
-                android:id="@+id/tv_end_time_value"
+                android:id="@+id/display_event_tv_end_time_value"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp"
                 android:text="09:00 PM" />
         </LinearLayout>
 
@@ -185,7 +218,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Invite Attendees" />
+                android:text="Invited Attendees"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -197,7 +231,10 @@
                 android:id="@+id/tv_invite_attendees_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -211,7 +248,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Set Remainder" />
+                android:text="Set Remainder"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -223,27 +261,37 @@
                 android:id="@+id/tv_select_remainder_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:paddingBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="10dp" />
         </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btn_edit"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="8dp"
-            android:text="Edit" />
-        <Button
-            android:id="@+id/btn_delete"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="8dp"
-            android:text="Delete" />
+            android:orientation="horizontal"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+            <Button
+                android:id="@+id/btn_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:background="@android:color/holo_red_light"
+                android:text="Edit" />
+
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1"
+                android:background="@android:color/holo_orange_light"
+                android:text="Delete" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
