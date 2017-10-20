@@ -3,6 +3,7 @@ package com.rajaselvan.calendar;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
 import android.icu.util.TimeZone;
@@ -10,6 +11,8 @@ import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -47,7 +50,6 @@ public class EditListItemActivity extends AppCompatActivity implements View.OnCl
     String[] reminder = {"10", "20", "30"};
     private ArrayAdapter remainderAdapter;
     private GoogleAccountCredential mCredential;
-    private Button mBtnUpdate;
     private Spinner selectRemainder;
     private Bundle extras;
     private String calendarId ="phll02ughcj3qk6v61pp9ok5k4@group.calendar.google.com";
@@ -103,12 +105,10 @@ public class EditListItemActivity extends AppCompatActivity implements View.OnCl
                 selectRemainder.setSelection(spinnerPosition);
             }
             mCredential = GoogleAccountSingleton.getInstance(getApplicationContext());
-            mBtnUpdate = (Button) findViewById(R.id.btn_update);
             mTxtStartDate.setOnClickListener(this);
             mTxtEndDate.setOnClickListener(this);
             mTxtStartTime.setOnClickListener(this);
             mTxtEndTime.setOnClickListener(this);
-            mBtnUpdate.setOnClickListener(this);
         }
 
     }
@@ -130,18 +130,6 @@ public class EditListItemActivity extends AppCompatActivity implements View.OnCl
         } else if (id == R.id.new_event_tv_end_time_value) {
             mTimePickerDialogFragment.setFlag(TimePickerDialogFragment.FLAG_END_TIME);
             mTimePickerDialogFragment.show(getSupportFragmentManager(), "timePicker");
-        } else if (id == R.id.btn_update) {
-            EventModel eventModel = new EventModel();
-            eventModel.setEventId(extras.getSerializable("id").toString());
-            eventModel.setEventSummary(mETxtSummary.getText().toString());
-            eventModel.setEventDescription(mETxtDescription.getText().toString());
-            eventModel.setEventLocation(mETxtLocation.getText().toString());
-            eventModel.setEventStartDateTime(getDateTime(mTxtStartDate.getText().toString(), mTxtStartTime.getText().toString()));
-            eventModel.setEventEndDateTime(getDateTime(mTxtEndDate.getText().toString(), mTxtEndTime.getText().toString()));
-            eventModel.setEventAttendees(getListOfEvenAttendees(mETxtAttendees.getText().toString()));
-            eventModel.setEventReminder(getEventRemainders(selectRemainder.getSelectedItem().toString()));
-            new EditListItemActivity.UpdateEventTask(mCredential).execute(eventModel);
-            finish();
         }
     }
 
@@ -155,6 +143,32 @@ public class EditListItemActivity extends AppCompatActivity implements View.OnCl
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_update_event, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_update:
+                EventModel eventModel = new EventModel();
+                eventModel.setEventId(extras.getSerializable("id").toString());
+                eventModel.setEventSummary(mETxtSummary.getText().toString());
+                eventModel.setEventDescription(mETxtDescription.getText().toString());
+                eventModel.setEventLocation(mETxtLocation.getText().toString());
+                eventModel.setEventStartDateTime(getDateTime(mTxtStartDate.getText().toString(), mTxtStartTime.getText().toString()));
+                eventModel.setEventEndDateTime(getDateTime(mTxtEndDate.getText().toString(), mTxtEndTime.getText().toString()));
+                eventModel.setEventAttendees(getListOfEvenAttendees(mETxtAttendees.getText().toString()));
+                eventModel.setEventReminder(getEventRemainders(selectRemainder.getSelectedItem().toString()));
+                new EditListItemActivity.UpdateEventTask(mCredential).execute(eventModel);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     /**
      * An asynchronous task that handles the Google Calendar API call.

@@ -105,7 +105,7 @@ public class EventListActivity extends AppCompatActivity implements OnMonthChang
                             }
                             detailIntent.putExtra("attendees", eventAttendeesList.toString());
                         }
-                        if(eventModel.getEventReminder()!=null) {
+                        if(eventModel.getEventReminder().getOverrides()!=null) {
                             StringBuilder eventRemainderList = new StringBuilder();
                             for (EventReminder eventReminder : eventModel.getEventReminder().getOverrides()) {
                                 eventRemainderList.append(eventReminder.getMinutes().toString());

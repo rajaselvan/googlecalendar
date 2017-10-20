@@ -14,10 +14,11 @@
 
         <com.prolificinteractive.materialcalendarview.MaterialCalendarView
             android:id="@+id/calendarView"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:background="@color/colorAccent"
-            app:mcv_selectionColor="#FFFF00"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="10dp"
+            app:mcv_selectionColor="@android:color/holo_green_dark"
             app:mcv_showOtherDates="none"
             app:mcv_titleAnimationOrientation="horizontal" />
 

@@ -279,15 +279,17 @@ public class CreateEventActivity extends AppCompatActivity implements View.OnCli
         String year = date.split("-")[0];
         String month = date.split("-")[1];
         String day = date.split("-")[2];
-        String hour = time.split(":")[0];
-        String minute = time.split(":")[1];
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, Integer.parseInt(year));
         cal.set(Calendar.MONTH, Integer.parseInt(month)-1);
         cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
-        cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
-        cal.set(Calendar.MINUTE, Integer.parseInt(minute));
-        cal.set(Calendar.SECOND, 0);
+        if(time!=null && !time.isEmpty()){
+            String hour = time.split(":")[0];
+            String minute = time.split(":")[1];
+            cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(hour));
+            cal.set(Calendar.MINUTE, Integer.parseInt(minute));
+            cal.set(Calendar.SECOND, 0);
+        }
         return new DateTime(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(cal.getTime()));
     }
 

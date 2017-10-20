@@ -204,7 +204,6 @@
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="06:00 AM"
                 android:textAlignment="viewStart" />
 
             <TextView
@@ -215,7 +214,6 @@
                 android:paddingBottom="10dp"
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
-                android:text="09:00 PM"
                 android:textAlignment="viewStart" />
         </LinearLayout>
 

@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,12 +22,11 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import java.io.IOException;
 import java.text.ParseException;
 
-public class EventListDetailActivity extends AppCompatActivity implements View.OnClickListener {
+public class EventListDetailActivity extends AppCompatActivity {
 
     private TextView mTxtStartDate, mTxtEndDate;
     private TextView mTxtStartTime, mTxtEndTime;
     private TextView mTxtSummary, mTxtDescription, mTxtLocation, mTxtAttendees, mTxtRemainders;
-    private Button mEdit, mDelete;
     private GoogleAccountCredential mCredential;
     private Bundle extras;
     private String calendarId ="phll02ughcj3qk6v61pp9ok5k4@group.calendar.google.com";
@@ -73,26 +74,31 @@ public class EventListDetailActivity extends AppCompatActivity implements View.O
                 mTxtRemainders.setText(extras.getSerializable("remainders").toString());
             }
             mCredential = GoogleAccountSingleton.getInstance(getApplicationContext());
-            mEdit = (Button) findViewById(R.id.btn_edit);
-            mEdit.setOnClickListener(this);
-            mDelete = (Button) findViewById(R.id.btn_delete);
-            mDelete.setOnClickListener(this);
         }
     }
 
     @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.btn_delete) {
-            new EventListDetailActivity.DeleteEventTask(mCredential).execute(extras.getSerializable("id").toString());
-            finish();
-        } else if (id == R.id.btn_edit) {
-            Intent detailIntent = new Intent(getApplicationContext(), EditListItemActivity.class);
-            detailIntent.putExtras(extras);
-            startActivity(detailIntent);
-        }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_detail_view, menu);
+        return true;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_edit:
+                Intent detailIntent = new Intent(getApplicationContext(), EditListItemActivity.class);
+                detailIntent.putExtras(extras);
+                startActivity(detailIntent);
+                return true;
+            case R.id.action_delete:
+                new EventListDetailActivity.DeleteEventTask(mCredential).execute(extras.getSerializable("id").toString());
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     /**
      * An asynchronous task that handles the Google Calendar API call.

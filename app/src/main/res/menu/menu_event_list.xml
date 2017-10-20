@@ -7,9 +7,4 @@
         android:title="Open Calendar"
         android:icon="@android:drawable/ic_menu_my_calendar"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never"/>
 </menu>
